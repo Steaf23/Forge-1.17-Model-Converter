@@ -37,6 +37,8 @@ def open_file():
     add_layer_definition(parts, ending_index, file_lines, texture_size)
     add_anim_and_render(file_lines, parts)
 
+    replace_entity(file_lines, class_name)
+
     # Filter empty elements
     file_lines = list(filter(lambda item: item != rem_line, file_lines))
 
@@ -190,8 +192,9 @@ def add_layer_definition(parts: List[dict], starting_index: int, file_lines: Lis
                                                                    cube["size"][2])
             inflate_string = ", new CubeDeformation(%.2ff))" % (cube["inflate"]) if cube["inflate"] != 0.0 else ")"
             mirror_string = ".mirror()" if cube["mirrored"] else ""
-            cube_string = tex_offs_string + box_string + inflate_string + mirror_string + ","
+            cube_string = tex_offs_string + box_string + inflate_string + mirror_string
             file_lines.append(cube_string)
+        file_lines.append(",")
 
         pose_string = "\n\t\t\t\tPartPose.offsetAndRotation" \
                       "(%sf, %sf, %sf, %sf, %sf, %sf));\n" % (part["pivot"][0],
@@ -209,17 +212,22 @@ def add_layer_definition(parts: List[dict], starting_index: int, file_lines: Lis
 
 def add_anim_and_render(file_lines: List[AnyStr], parts: List[dict]) -> None:
     file_lines.append("\n\t@Override"
-                      "\n\tpublic void setupAnim(Entity entityIn, float limbSwing, float limbSwingAmount, "
+                      "\n\tpublic void setupAnim(Entity entity, float limbSwing, float limbSwingAmount, "
                       "float ageInTicks, float netHeadYaw, float headPitch) {"
                       "\n\t\t// Use this method to setup the animation and rotation angles"
                       "\n\t}\n")
     file_lines.append("\n\t@Override"
-                      "\n\tpublic void renderToBuffer(PoseStack matrixStackIn, VertexConsumer bufferIn, "
-                      "int packedLightIn, int packedOverlayIn, float red, float green, float blue, float alpha) {")
+                      "\n\tpublic void renderToBuffer(PoseStack poseStack, VertexConsumer buffer, "
+                      "int packedLight, int packedOverlay, float red, float green, float blue, float alpha) {")
     for part in parts:
         if "parent" not in part:
-            file_lines.append("\n\t\t%s.render(matrixStack, buffer, packedLight, packedOverlay);" % part["name"])
-    file_lines.append("\n\t}\n")
+            file_lines.append("\n\t\t%s.render(poseStack, buffer, packedLight, packedOverlay);" % part["name"])
+    file_lines.append("\n\t}\n}\n")
+
+
+def replace_entity(file_lines: List[AnyStr], filename: str):
+    for line in file_lines:
+        file_lines[file_lines.index(line)] = re.sub(r"(?<![\w])Entity(?![a-zA-Z])", filename, line)
 
 
 def remove_after_line(index: int, file_lines: List[AnyStr]) -> List[AnyStr]:
@@ -251,14 +259,14 @@ def get_field_name(line: str) -> str:
 
 
 if __name__ == "__main__":
-    root = tk.Tk()  # Mandatory for Window
-    root.geometry('300x100')  # Window Size
-    root.title("Model Converter")  # Window Title
+    root = tk.Tk()
+    root.geometry('300x100')
+    root.title("Forge EntityModel converter 1.16 -> 1.17")
 
     newline = "%(new_line)%"
     rem_line = "%(r)%"
 
-    btn = tk.Button(root, text='Select File', command=lambda: open_file())  # Button
-    btn.grid(row=1, column=1)  # Button Position
+    btn = tk.Button(root, text='Select File', command=lambda: open_file())
+    btn.grid(row=1, column=1)
     btn.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
-    tk.mainloop()  # Mandatory for window
+    tk.mainloop()

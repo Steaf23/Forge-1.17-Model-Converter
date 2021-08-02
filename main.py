@@ -8,7 +8,7 @@ from typing import List, AnyStr, Tuple
 
 
 def open_file():
-    path = askopenfilename(title="Convert Forge EntityModel")
+    path = askopenfilename(title="Select Forge 1.16 EntityModel .java class")
 
     if path == "":
         root.destroy()

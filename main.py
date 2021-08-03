@@ -181,19 +181,20 @@ def add_layer_definition(parts: List[dict], starting_index: int, file_lines: Lis
     line_index += 1
     for part in parts:
         file_lines.append('\n\t\tpartDefinition.addOrReplaceChild("%s", CubeListBuilder.create()' % part["id_name"])
-        for cube in part["cubes"]:
-            tex_offs_string = "\n\t\t\t\t\t\t.texOffs(%d, %d)" % (cube["uv_position"][0],
-                                                                  cube["uv_position"][1])
-            box_string = ".addBox(%sf, %sf, %sf, %sf, %sf, %sf" % (cube["origin"][0],
-                                                                   cube["origin"][1],
-                                                                   cube["origin"][2],
-                                                                   cube["size"][0],
-                                                                   cube["size"][1],
-                                                                   cube["size"][2])
-            inflate_string = ", new CubeDeformation(%.2ff))" % (cube["inflate"]) if cube["inflate"] != 0.0 else ")"
-            mirror_string = ".mirror()" if cube["mirrored"] else ""
-            cube_string = tex_offs_string + box_string + inflate_string + mirror_string
-            file_lines.append(cube_string)
+        if "cubes" in part:
+            for cube in part["cubes"]:
+                tex_offs_string = "\n\t\t\t\t\t\t.texOffs(%d, %d)" % (cube["uv_position"][0],
+                                                                      cube["uv_position"][1])
+                box_string = ".addBox(%sf, %sf, %sf, %sf, %sf, %sf" % (cube["origin"][0],
+                                                                       cube["origin"][1],
+                                                                       cube["origin"][2],
+                                                                       cube["size"][0],
+                                                                       cube["size"][1],
+                                                                       cube["size"][2])
+                inflate_string = ", new CubeDeformation(%.2ff))" % (cube["inflate"]) if cube["inflate"] != 0.0 else ")"
+                mirror_string = ".mirror()" if cube["mirrored"] else ""
+                cube_string = tex_offs_string + box_string + inflate_string + mirror_string
+                file_lines.append(cube_string)
         file_lines.append(",")
 
         pose_string = "\n\t\t\t\tPartPose.offsetAndRotation" \

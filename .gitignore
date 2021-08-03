@@ -115,3 +115,4 @@ dmypy.json
 
 # PyCharm IDE
 .idea/
+*.java

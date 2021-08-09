@@ -132,18 +132,18 @@ def build_part_list(file_lines) -> List[dict]:
             while line != "\n":
                 line = file_lines[i + part_i]
                 if "setRotationPoint" in line:
-                    part["pivot"] = get_numbers(line)
+                    part["pivot"] = get_numbers(line.split(".", 1)[1])
                 if "addChild" in line:
                     part["parent"] = get_field_name(line)
                 if "setRotationAngle" in line:
-                    part["rotation"] = get_numbers(line)
+                    part["rotation"] = get_numbers(line.split(".", 1)[1])
                 if "setTextureOffset" in line:
-                    f = get_numbers(line)
+                    f = get_numbers(line.split(".", 1)[1])
                     cube: dict = {"uv_position": [f[0], f[1]],
                                   "origin": [f[2], f[3], f[4]],
                                   "size": [f[5], f[6], f[7]],
                                   "inflate": f[8],
-                                  "mirrored": get_booleans(line)[0]}
+                                  "mirrored": get_booleans(line.split(".", 1)[1])[0]}
                     cubes.append(cube)
                     part["cubes"] = cubes
                 if "rotation" not in part:

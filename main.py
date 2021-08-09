@@ -136,7 +136,7 @@ def build_part_list(file_lines) -> List[dict]:
                 if "addChild" in line:
                     part["parent"] = get_field_name(line)
                 if "setRotationAngle" in line:
-                    part["rotation"] = get_numbers(line.split(".", 1)[1])
+                    part["rotation"] = get_numbers(line)
                 if "setTextureOffset" in line:
                     f = get_numbers(line.split(".", 1)[1])
                     cube: dict = {"uv_position": [f[0], f[1]],

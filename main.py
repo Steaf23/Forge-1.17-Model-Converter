@@ -132,24 +132,30 @@ def build_part_list(file_lines) -> List[dict]:
             while line != "\n":
                 line = file_lines[i + part_i]
                 if "setRotationPoint" in line:
-                    part["pivot"] = get_numbers(line.split(".", 1)[1])
+                    part["pivot"] = get_numbers(line.split(part["id_name"], 1)[1])
                 if "addChild" in line:
                     part["parent"] = get_field_name(line)
                 if "setRotationAngle" in line:
-                    part["rotation"] = get_numbers(line)
+                    part["rotation"] = get_numbers(line.split(part["id_name"], 1)[1])
                 if "setTextureOffset" in line:
-                    f = get_numbers(line.split(".", 1)[1])
+                    f = get_numbers(line.split(part["id_name"], 1)[1])
                     cube: dict = {"uv_position": [f[0], f[1]],
                                   "origin": [f[2], f[3], f[4]],
                                   "size": [f[5], f[6], f[7]],
                                   "inflate": f[8],
-                                  "mirrored": get_booleans(line.split(".", 1)[1])[0]}
+                                  "mirrored": get_booleans(line.split(part["id_name"], 1)[1])[0]}
                     cubes.append(cube)
                     part["cubes"] = cubes
                 if "rotation" not in part:
                     part["rotation"] = [0.0, 0.0, 0.0]
                 part_i += 1
             parts.append(part)
+    p_i = 0
+    for part in parts:
+        if "parent" not in part:
+            p_i -= 1
+        p_i += 1
+        part["id"] = p_i
     return parts
 
 
@@ -180,7 +186,19 @@ def add_layer_definition(parts: List[dict], starting_index: int, file_lines: Lis
 
     line_index += 1
     for part in parts:
-        file_lines.append('\n\t\tpartDefinition.addOrReplaceChild("%s", CubeListBuilder.create()' % part["id_name"])
+        # root note, get partdefinition from meshDefinition
+        if "parent" not in part:
+            part_def = "partDefinition."
+        else:
+            parent_idx = get_part_by_name(part["parent"], parts)["id"]
+            parent_idx = parent_idx if parent_idx != 0 else ""
+
+            if has_children(part, parts):
+                part_def = "PartDefinition partDefinition%s = " % str(part["id"] if part["id"] != 0 else "")
+            else:
+                part_def = ""
+            part_def += "partDefinition%s." % str(parent_idx)
+        file_lines.append('\n\t\t%saddOrReplaceChild("%s", CubeListBuilder.create()' % (part_def, part["id_name"]))
         if "cubes" in part:
             for cube in part["cubes"]:
                 tex_offs_string = "\n\t\t\t\t\t\t.texOffs(%d, %d)" % (cube["uv_position"][0],
@@ -239,6 +257,14 @@ def get_part_by_name(name: str, parts: List[dict]) -> dict:
     for p in parts:
         if name in p["name"]:
             return p
+
+
+def has_children(part: dict, parts: List[dict]) -> bool:
+    for parent_part in parts:
+        if "parent" in parent_part:
+            if part == get_part_by_name(parent_part["parent"], parts):
+                return True
+    return False
 
 
 def get_numbers(line: str) -> List:

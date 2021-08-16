@@ -156,6 +156,7 @@ def build_part_list(file_lines) -> List[dict]:
             p_i -= 1
         p_i += 1
         part["id"] = p_i
+    parts = reorient_parts(parts)
     return parts
 
 
@@ -259,12 +260,35 @@ def get_part_by_name(name: str, parts: List[dict]) -> dict:
             return p
 
 
+def reorient_parts(parts: List[dict]) -> List[dict]:
+    for part in parts:
+        root_parent = find_root_parent(part, parts)
+        if root_parent != part:
+            new_y = part["pivot"][1] + find_root_parent(part, parts)["pivot"][1]
+            part["pivot"][1] = new_y
+    return parts
+
+
+def get_parent_part(part: dict, parts: List[dict]) -> dict:
+    if "parent" in part:
+        return get_part_by_name(part["parent"], parts)
+    return None
+
+
 def has_children(part: dict, parts: List[dict]) -> bool:
     for parent_part in parts:
-        if "parent" in parent_part:
-            if part == get_part_by_name(parent_part["parent"], parts):
-                return True
+        if part == get_parent_part(parent_part, parts):
+            return True
     return False
+
+
+def find_root_parent(part: dict, parts: List[dict]) -> dict:
+    while True:
+        parent = get_parent_part(part, parts)
+        if parent is None:
+            return part
+        else:
+            part = parent
 
 
 def get_numbers(line: str) -> List:

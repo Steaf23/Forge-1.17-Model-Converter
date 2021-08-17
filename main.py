@@ -262,10 +262,11 @@ def get_part_by_name(name: str, parts: List[dict]) -> dict:
 
 def reorient_parts(parts: List[dict]) -> List[dict]:
     for part in parts:
-        root_parent = find_root_parent(part, parts)
-        if root_parent != part:
-            new_y = part["pivot"][1] + find_root_parent(part, parts)["pivot"][1]
-            part["pivot"][1] = new_y
+        parent_part = get_parent_part(part, parts)
+        if parent_part is not None and part != parent_part:
+            if "parent" not in parent_part:
+                new_y = part["pivot"][1] + parent_part["pivot"][1]
+                part["pivot"][1] = new_y
     return parts
 
 

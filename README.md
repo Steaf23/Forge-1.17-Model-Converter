@@ -7,7 +7,7 @@
 4. Be sure to back up your old files!
 5. Either remove or move the old file and change the name of the file back to the original name
 
-##Notes
+## Notes
 - This program works best with EntityModels generated directly from blockbench (MCP mappings);
 - The name of the class must be the same name as the filename (apart from teh java extension ofcourse);
 - The constructor mut not have any parameters. This will prevent the program from finding the constructor at all.
